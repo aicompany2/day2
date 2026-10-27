@@ -85,6 +85,21 @@
     }
     .cta:hover { background: #e65f00; }
 
+    #gallery { max-width: 1000px; margin: 1.5rem auto 0; padding: 0 1rem; }
+    #gallery form { display: flex; gap: .5rem; margin-bottom: 1rem; }
+    #gallery input { flex: 1; padding: .6rem .8rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    #gallery button {
+      padding: .6rem 1.1rem; font-size: 1rem; border: none; border-radius: 8px;
+      background: #ff7a00; color: #fff; cursor: pointer; font-weight: bold;
+    }
+    #gallery button:disabled { background: #ccc; cursor: default; }
+    #slides { display: flex; gap: .8rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .5rem; }
+    #slides a { flex: 0 0 220px; scroll-snap-align: start; text-decoration: none; color: inherit; }
+    #slides img { width: 220px; height: 150px; object-fit: cover; border-radius: 10px; display: block; background: #eee; }
+    #slides span { display: block; font-size: .8rem; color: #666; margin-top: .2rem; }
+    .pager { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: .8rem; }
+    #msg { text-align: center; color: #888; padding: 1rem 0; }
+
     footer {
       background: #2b2b2b;
       color: #ccc;
@@ -113,8 +128,26 @@
       <li><a href="#season">제철 달력</a></li>
       <li><a href="#experience">체험 안내</a></li>
       <li><a href="#tips">구매 팁</a></li>
+      <li><a href="#gallery">사진 검색</a></li>
     </ul>
   </nav>
+
+  <div id="gallery">
+    <div class="box">
+      <h2>📸 제주 사진 검색</h2>
+      <form id="searchForm">
+        <input id="q" type="text" value="제주 감귤" placeholder="검색어를 입력하세요 (예: 한라봉, 성산일출봉)">
+        <button type="submit">검색</button>
+      </form>
+      <div id="msg">검색어를 입력하고 검색을 눌러 보세요.</div>
+      <div id="slides"></div>
+      <div class="pager">
+        <button id="prev" type="button" disabled>◀ 이전 10개</button>
+        <span id="info"></span>
+        <button id="next" type="button" disabled>다음 10개 ▶</button>
+      </div>
+    </div>
+  </div>
 
   <div class="layout">
     <section id="specialty" class="box">
@@ -193,5 +226,71 @@
     <p>🌴 제주 특산물 이야기 · 제주의 맛과 멋을 전합니다 🍊</p>
     <p>&copy; 2026 Jeju Specialty</p>
   </footer>
+
+  <script>
+    const PER_PAGE = 10;
+    let query = '';
+    let page = 1;
+    let total = 0;
+
+    const form = document.getElementById('searchForm');
+    const qInput = document.getElementById('q');
+    const slides = document.getElementById('slides');
+    const msg = document.getElementById('msg');
+    const info = document.getElementById('info');
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+
+    async function load() {
+      msg.textContent = '불러오는 중...';
+      slides.replaceChildren();
+      prev.disabled = next.disabled = true;
+      try {
+        const r = await fetch('/api/pixabay?q=' + encodeURIComponent(query) + '&page=' + page);
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || '요청에 실패했습니다.');
+        total = data.total;
+        if (!data.hits.length) {
+          msg.textContent = '검색 결과가 없습니다.';
+          info.textContent = '';
+          return;
+        }
+        msg.textContent = '';
+        data.hits.forEach((h) => {
+          const a = document.createElement('a');
+          a.href = h.page;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          const img = document.createElement('img');
+          img.src = h.preview;
+          img.alt = h.tags;
+          img.loading = 'lazy';
+          const cap = document.createElement('span');
+          cap.textContent = h.tags;
+          a.append(img, cap);
+          slides.append(a);
+        });
+        slides.scrollLeft = 0;
+        const pages = Math.max(1, Math.ceil(total / PER_PAGE));
+        info.textContent = page + ' / ' + pages + ' 페이지 (총 ' + total + '장)';
+        prev.disabled = page <= 1;
+        next.disabled = page >= pages;
+      } catch (e) {
+        msg.textContent = '오류: ' + e.message;
+        info.textContent = '';
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const v = qInput.value.trim();
+      if (!v) return;
+      query = v;
+      page = 1;
+      load();
+    });
+    prev.addEventListener('click', () => { page--; load(); });
+    next.addEventListener('click', () => { page++; load(); });
+  </script>
 </body>
 </html>
