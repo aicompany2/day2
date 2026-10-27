@@ -3,313 +3,334 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>제주 특산물 이야기</title>
+  <title>제주 특산물 홍보관</title>
   <style>
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       font-family: sans-serif;
-      background: #fff8ee;
-      color: #2b2b2b;
-      line-height: 1.7;
+      background: #f4f8f3;
+      color: #222;
+      line-height: 1.6;
     }
-    .wrap { max-width: 1000px; margin: 0 auto; padding: 0 1rem; }
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: clamp(8px, 2vw, 20px);
+      display: grid;
+      gap: clamp(8px, 1.5vw, 16px);
+      grid-template-columns: 2fr 1fr;
+      grid-template-areas:
+        "header  header"
+        "nav     nav"
+        "section aside"
+        "article aside"
+        "gallery gallery"
+        "footer  footer";
+    }
+    #gallery { grid-area: gallery; background: #fff; border-radius: 12px; padding: 18px 20px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); }
+    .search { display: flex; gap: 8px; margin-bottom: 8px; }
+    .search input { flex: 1; padding: 10px 12px; font-size: 1rem; border: 1px solid #c9d1d9; border-radius: 8px; }
+    .search button { padding: 10px 20px; font-size: 1rem; border: none; border-radius: 8px; background: #2f6f3e; color: #fff; cursor: pointer; }
+    #gStatus { min-height: 1.5em; color: #555; font-size: 0.92rem; margin-bottom: 10px; }
+    .slider { max-width: 560px; margin: 0 auto; }
+    .slider img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; background: #dde3ea; display: block; }
+    #gPage { text-align: center; margin-top: 8px; color: #555; font-size: 0.9rem; }
+
+    #chatToggle {
+      position: fixed; right: 20px; bottom: 20px; z-index: 20;
+      border: none; border-radius: 999px; padding: 14px 22px;
+      background: #ff7b00; color: #fff; font-size: 1rem; font-weight: bold;
+      cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    #chatToggle:hover { background: #e66f00; }
+    #chatPanel {
+      position: fixed; right: 20px; bottom: 80px; z-index: 20;
+      width: 360px; height: 520px; max-width: calc(100vw - 24px); max-height: calc(100vh - 100px);
+      border-radius: 14px; overflow: hidden; background: #fff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    #chatPanel iframe { width: 100%; height: 100%; border: 0; display: block; }
+    #chatPanel[hidden] { display: none; }
+    header { grid-area: header; }
+    nav { grid-area: nav; }
+    #products { grid-area: section; }
+    #story { grid-area: article; }
+    aside { grid-area: aside; }
+    footer { grid-area: footer; }
 
     header {
-      background: linear-gradient(135deg, #ff9a1f, #ff6a00);
+      background: linear-gradient(135deg, #ff9f1c, #ff7b00);
       color: #fff;
       text-align: center;
-      padding: 2.5rem 1rem;
+      padding: 32px 16px;
+      border-radius: 12px;
     }
-    header h1 { margin: 0; font-size: 2rem; }
-    header p { margin: .5rem 0 0; opacity: .95; }
+    header h1 { margin: 0 0 6px; font-size: clamp(1.4rem, 4vw + 0.5rem, 2.2rem); }
+    header p { margin: 0; opacity: 0.95; }
 
-    nav { background: #1f6f5c; position: sticky; top: 0; z-index: 10; }
-    nav ul {
+    nav {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: .3rem 1.5rem;
-      list-style: none;
-      margin: 0;
-      padding: .8rem 1rem;
-    }
-    nav a { color: #fff; text-decoration: none; font-weight: bold; }
-    nav a:hover { text-decoration: underline; }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      grid-template-areas: "section aside" "article aside";
-      gap: 1.2rem;
-      padding: 1.5rem 1rem;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    .layout > section { grid-area: section; }
-    .layout > article { grid-area: article; }
-    .layout > aside { grid-area: aside; }
-
-    .box {
+      gap: 8px;
       background: #fff;
+      padding: 10px;
       border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, .08);
-      padding: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
-    h2 { margin: 0 0 .8rem; color: #e65f00; font-size: 1.4rem; }
-    h3 { margin: 0 0 .3rem; font-size: 1.05rem; color: #1f6f5c; }
-
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
-    .item { background: #fff3e0; border-radius: 10px; padding: 1rem; }
-    .item .emoji { font-size: 2rem; }
-    .item p { margin: .2rem 0 0; font-size: .92rem; }
-
-    .season { list-style: none; margin: 0; padding: 0; }
-    .season li { padding: .5rem 0; border-bottom: 1px dashed #ddd; }
-    .season li:last-child { border-bottom: none; }
-    .season b { color: #1f6f5c; }
-
-    aside .box + .box { margin-top: 1.2rem; }
-    aside ul { margin: 0; padding-left: 1.2rem; }
-    aside li { margin: .3rem 0; }
-    .cta {
-      display: inline-block;
-      margin-top: .5rem;
-      background: #ff7a00;
-      color: #fff;
-      padding: .6rem 1.2rem;
-      border-radius: 999px;
+    nav a {
       text-decoration: none;
+      color: #2f6f3e;
+      background: #e6f3e8;
+      padding: 8px 18px;
+      border-radius: 999px;
       font-weight: bold;
     }
-    .cta:hover { background: #e65f00; }
+    nav a:hover { background: #2f6f3e; color: #fff; }
 
-    #gallery { max-width: 1000px; margin: 1.5rem auto 0; padding: 0 1rem; }
-    #gallery form { display: flex; gap: .5rem; margin-bottom: 1rem; }
-    #gallery input { flex: 1; padding: .6rem .8rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 8px; }
-    #gallery button {
-      padding: .6rem 1.1rem; font-size: 1rem; border: none; border-radius: 8px;
-      background: #ff7a00; color: #fff; cursor: pointer; font-weight: bold;
+    section, article, aside {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
-    #gallery button:disabled { background: #ccc; cursor: default; }
-    #slides { text-align: center; }
-    #slides a { display: inline-block; text-decoration: none; color: inherit; }
-    #slides img { width: 100%; max-width: 560px; height: 360px; object-fit: cover; border-radius: 10px; display: block; background: #eee; }
-    #slides span { display: block; font-size: .85rem; color: #666; margin-top: .3rem; }
-    .pager { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: .8rem; }
-    #msg { text-align: center; color: #888; padding: 1rem 0; }
+    h2 { margin: 0 0 12px; font-size: 1.3rem; color: #2f6f3e; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .item { border: 1px solid #e3ebe2; border-radius: 10px; padding: 12px; background: #fbfdfb; }
+    .item .emoji { font-size: 2rem; }
+    .item h3 { margin: 4px 0; font-size: 1.05rem; }
+    .item p { margin: 0; color: #555; font-size: 0.92rem; }
+    .item .season { margin-top: 6px; font-size: 0.8rem; color: #d96b00; font-weight: bold; }
+
+    article p { margin: 0 0 10px; }
+    article ul { margin: 0; padding-left: 20px; }
+
+    aside h2 { font-size: 1.1rem; }
+    aside ul { list-style: none; margin: 0 0 16px; padding: 0; }
+    aside li { padding: 6px 0; border-bottom: 1px dashed #dde6dc; font-size: 0.92rem; }
+    .like-btn {
+      width: 100%;
+      border: none;
+      background: #ffe3e8;
+      color: #d6336c;
+      padding: 10px;
+      border-radius: 999px;
+      font-size: 1.05rem;
+      cursor: pointer;
+    }
+    .like-btn:hover { background: #ffd0da; }
 
     footer {
-      background: #2b2b2b;
-      color: #ccc;
+      background: #2f6f3e;
+      color: #e6f3e8;
       text-align: center;
-      padding: 1.5rem 1rem;
-      font-size: .9rem;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 0.9rem;
     }
 
+    /* 태블릿: 오른쪽 aside를 좁게 */
+    @media (max-width: 960px) {
+      .page { grid-template-columns: 3fr 2fr; }
+    }
+
+    /* 모바일: 한 줄로 쌓기 */
     @media (max-width: 720px) {
-      .layout {
+      .page {
         grid-template-columns: 1fr;
-        grid-template-areas: "section" "article" "aside";
+        grid-template-areas: "header" "nav" "section" "article" "aside" "gallery" "footer";
       }
+      header { padding: 22px 12px; }
+      nav { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      nav a { flex: none; padding: 10px 16px; }
+      .search { flex-direction: column; }
+      .search button, .like-btn { min-height: 44px; }
+      #chatToggle { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); padding: 12px 18px; }
+      #chatPanel {
+        right: 0; left: 0; bottom: 0; top: 0;
+        width: 100%; height: 100%; max-width: none; max-height: none;
+        border-radius: 0;
+      }
+      #chatToggle { z-index: 30; }
+    }
+
+    /* reactive.html 로 이동하는 큰 원형 버튼 (왼쪽 아래 고정, 오른쪽의 채팅 버튼과 겹치지 않게) */
+    .go-reactive {
+      position: fixed;
+      left: 1.2rem;
+      bottom: 1.2rem;
+      z-index: 25;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: #1f3a5f;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: .95rem;
+      line-height: 1.3;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
+      transition: transform .2s, background .2s;
+    }
+    .go-reactive .icon { font-size: 2rem; line-height: 1; }
+    .go-reactive:hover, .go-reactive:focus-visible { transform: scale(1.08); background: #2e5a94; }
+    @media (max-width: 720px) {
+      .go-reactive { width: 88px; height: 88px; font-size: .8rem; left: .8rem; bottom: .8rem; }
+      .go-reactive .icon { font-size: 1.6rem; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🍊 제주 특산물 이야기 🌴</h1>
-    <p>바람과 햇살, 화산 토양이 키운 제주의 맛을 만나보세요</p>
-  </header>
+  <div class="page">
+    <header>
+      <h1>🍊 제주 특산물 홍보관</h1>
+      <p>바람과 햇살, 바다가 키운 제주의 맛을 만나보세요</p>
+    </header>
 
-  <nav>
-    <ul>
-      <li><a href="#specialty">대표 특산물</a></li>
-      <li><a href="#season">제철 달력</a></li>
-      <li><a href="#experience">체험 안내</a></li>
-      <li><a href="#tips">구매 팁</a></li>
-      <li><a href="#gallery">사진 검색</a></li>
-    </ul>
-  </nav>
+    <nav>
+      <a href="#products">🛒 대표 특산물</a>
+      <a href="#story">📖 제주의 맛 이야기</a>
+      <a href="#season">📅 제철 달력</a>
+      <a href="#gallery">🖼️ 사진 검색</a>
+    </nav>
 
-  <div id="gallery">
-    <div class="box">
-      <h2>📸 제주 사진 검색</h2>
-      <form id="searchForm">
-        <input id="q" type="text" value="제주 감귤" placeholder="검색어를 입력하세요 (예: 한라봉, 성산일출봉)">
-        <button type="submit">검색</button>
-      </form>
-      <div id="msg">검색어를 입력하고 검색을 눌러 보세요.</div>
-      <div id="slides"></div>
-      <div class="pager">
-        <button id="prev" type="button" disabled>◀ 이전 10개</button>
-        <span id="info"></span>
-        <button id="next" type="button" disabled>다음 10개 ▶</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="layout">
-    <section id="specialty" class="box">
-      <h2>🍊 제주 대표 특산물</h2>
-      <p>제주의 특별한 자연이 키워낸 정직한 맛을 소개합니다.</p>
+    <section id="products">
+      <h2>🛒 대표 특산물</h2>
       <div class="grid">
-        <div class="item">
-          <div class="emoji">🍊</div>
-          <h3>감귤</h3>
-          <p>제주를 대표하는 과일. 새콤달콤한 맛과 풍부한 비타민 C가 매력입니다.</p>
-        </div>
-        <div class="item">
-          <div class="emoji">🍋</div>
-          <h3>한라봉</h3>
-          <p>한라산을 닮은 꼭지 모양. 진한 향과 달콤함이 일품입니다.</p>
-        </div>
-        <div class="item">
-          <div class="emoji">🍑</div>
-          <h3>천혜향</h3>
-          <p>향이 좋고 과즙이 풍부해 선물용으로 인기가 많습니다.</p>
-        </div>
-        <div class="item">
-          <div class="emoji">🐖</div>
-          <h3>흑돼지</h3>
-          <p>쫄깃한 식감과 고소한 맛으로 제주 여행의 필수 코스입니다.</p>
-        </div>
-        <div class="item">
-          <div class="emoji">🐟</div>
-          <h3>갈치 · 옥돔</h3>
-          <p>제주 바다에서 온 담백하고 신선한 수산물입니다.</p>
-        </div>
-        <div class="item">
-          <div class="emoji">🍵</div>
-          <h3>녹차</h3>
-          <p>드넓은 차밭에서 자란 향긋한 제주 녹차와 디저트입니다.</p>
-        </div>
+        <div class="item"><div class="emoji">🍊</div><h3>감귤</h3><p>새콤달콤한 맛으로 제주를 대표하는 과일입니다.</p><div class="season">제철: 가을~겨울</div></div>
+        <div class="item"><div class="emoji">🍋</div><h3>한라봉</h3><p>향이 진하고 과즙이 풍부한 만감류입니다.</p><div class="season">제철: 겨울~봄</div></div>
+        <div class="item"><div class="emoji">🐖</div><h3>흑돼지</h3><p>쫄깃하고 고소한 맛의 제주 대표 고기입니다.</p><div class="season">제철: 사계절</div></div>
+        <div class="item"><div class="emoji">🐟</div><h3>갈치</h3><p>은빛 갈치로 만드는 구이와 조림이 인기입니다.</p><div class="season">제철: 여름~가을</div></div>
+        <div class="item"><div class="emoji">🍡</div><h3>오메기떡</h3><p>차조로 만든 쫀득한 제주 전통 떡입니다.</p><div class="season">제철: 사계절</div></div>
+        <div class="item"><div class="emoji">🥜</div><h3>당근·감자·마늘</h3><p>제주 땅에서 자란 신선한 농산물입니다.</p><div class="season">제철: 품목별 상이</div></div>
       </div>
     </section>
 
-    <article id="season" class="box">
-      <h2>🗓️ 제철 달력</h2>
-      <p>가장 맛있을 때 즐기면 제주의 맛이 두 배가 됩니다.</p>
-      <ul class="season">
-        <li><b>겨울 (12~2월)</b> · 감귤, 한라봉, 레드향</li>
-        <li><b>봄 (3~5월)</b> · 천혜향, 녹차, 유채꽃과 함께하는 여행</li>
-        <li><b>여름 (6~8월)</b> · 갈치, 한치, 시원한 해산물 요리</li>
-        <li><b>가을 (9~11월)</b> · 조생 감귤, 당근, 햇감자</li>
+    <article id="story">
+      <h2>📖 제주의 맛 이야기</h2>
+      <p>화산섬 제주의 토양과 따뜻한 바닷바람은 독특한 맛을 가진 농수산물을 길러냅니다. 정성껏 키운 특산물은 선물용으로도, 집밥 재료로도 사랑받고 있습니다.</p>
+      <p>특산물을 더 즐겁게 고르는 방법</p>
+      <ul>
+        <li>제철 시기를 확인하면 가장 맛있을 때 먹을 수 있어요.</li>
+        <li>선물용은 포장과 배송 기간을 미리 살펴보세요.</li>
+        <li>여행 중 시장과 직판장을 들러 직접 맛보고 고르는 것도 좋아요.</li>
       </ul>
-      <p style="margin-bottom:0;font-size:.85rem;color:#888;">※ 제철 시기는 해마다 날씨에 따라 조금씩 달라질 수 있어요.</p>
     </article>
 
-    <aside>
-      <div id="experience" class="box">
-        <h2>🏞️ 체험 안내</h2>
-        <ul>
-          <li>🍊 감귤 따기 체험</li>
-          <li>🐎 승마 체험</li>
-          <li>🤿 해녀 문화 체험</li>
-          <li>🍵 녹차밭 산책</li>
-          <li>🌋 성산일출봉 · 한라산</li>
-        </ul>
-      </div>
-      <div id="tips" class="box">
-        <h2>🛍️ 구매 팁</h2>
-        <ul>
-          <li>제철 시기를 확인하세요.</li>
-          <li>산지 직송 여부를 살펴보세요.</li>
-          <li>선물용은 포장 상태를 확인하세요.</li>
-        </ul>
-        <a class="cta" href="#specialty">특산물 둘러보기</a>
-      </div>
+    <aside id="season">
+      <h2>📅 제철 달력</h2>
+      <ul>
+        <li>🍊 11~1월 : 감귤</li>
+        <li>🍋 1~4월 : 한라봉</li>
+        <li>🐟 7~10월 : 갈치</li>
+        <li>🍡 연중 : 오메기떡</li>
+      </ul>
+      <h2>👍 이 사이트가 좋았다면</h2>
+      <button id="likeBtn" class="like-btn">❤️ 좋아요 <span id="likeCount">0</span></button>
     </aside>
-  </div>
+
+    <section id="gallery">
+      <h2>🖼️ 제주 사진 검색</h2>
+      <div class="search">
+        <input id="gQuery" type="text" placeholder="검색어 입력 (예: jeju, tangerine)">
+        <button id="gSearch">검색</button>
+      </div>
+      <div id="gStatus">검색어를 입력하면 사진을 1초마다 한 장씩 보여드려요.</div>
+      <div class="slider">
+        <img id="gImg" alt="" hidden>
+      </div>
+      <div id="gPage"></div>
+    </section>
+
+    <a class="go-reactive" href="reactive.html" aria-label="반응형 메뉴 페이지로 이동">
+    <span class="icon">🧭</span>
+    <span>반응형<br>메뉴</span>
+  </a>
 
   <footer>
-    <p>🌴 제주 특산물 이야기 · 제주의 맛과 멋을 전합니다 🍊</p>
-    <p>&copy; 2026 Jeju Specialty</p>
-  </footer>
+      © 2026 제주 특산물 홍보관 · 제철과 가격은 변동될 수 있으니 구매 전 확인해 주세요.
+    </footer>
+  </div>
+
+  <button id="chatToggle">💬 에이전트와 채팅</button>
+  <div id="chatPanel" hidden>
+    <iframe id="chatFrame" title="제주 여행 에이전트 채팅"></iframe>
+  </div>
 
   <script>
-    const PER_PAGE = 10;
-    let query = '';
-    let page = 1;
-    let total = 0;
+    const chatToggle = document.getElementById('chatToggle');
+    const chatPanel = document.getElementById('chatPanel');
+    const chatFrame = document.getElementById('chatFrame');
+    chatToggle.addEventListener('click', () => {
+      const opening = chatPanel.hidden;
+      if (opening && !chatFrame.src) chatFrame.src = 'agent.html';
+      chatPanel.hidden = !opening;
+      chatToggle.textContent = opening ? '✖ 채팅 닫기' : '💬 에이전트와 채팅';
+    });
 
-    const form = document.getElementById('searchForm');
-    const qInput = document.getElementById('q');
-    const slides = document.getElementById('slides');
-    const msg = document.getElementById('msg');
-    const info = document.getElementById('info');
-    const prev = document.getElementById('prev');
-    const next = document.getElementById('next');
+    let likes = 0;
+    const likeCount = document.getElementById('likeCount');
+    document.getElementById('likeBtn').addEventListener('click', () => {
+      likes++;
+      likeCount.textContent = likes;
+    });
 
-    const SLIDE_MS = 500;
+    // 사진 검색 슬라이더 (API Key는 서버의 /api/pixabay 가 환경변수로 처리)
+    const SLIDE_MS = 1000;
+    const gQuery = document.getElementById('gQuery');
+    const gStatus = document.getElementById('gStatus');
+    const gImg = document.getElementById('gImg');
+    const gPage = document.getElementById('gPage');
+    let images = [];
+    let index = 0;
     let timer = null;
 
-    function stopSlideshow() {
-      if (timer) clearInterval(timer);
-      timer = null;
+    function showSlide() {
+      const img = images[index];
+      gImg.src = img.webformatURL;
+      gImg.alt = img.tags;
+      gImg.hidden = false;
+      gPage.textContent = `${index + 1} / ${images.length}`;
     }
 
-    // 이미지를 하나씩 0.5초마다 바꿔 보여주고, 끝나면 처음부터 반복한다.
-    function startSlideshow(hits) {
-      stopSlideshow();
-      const a = document.createElement('a');
-      a.target = '_blank';
-      a.rel = 'noopener';
-      const img = document.createElement('img');
-      const cap = document.createElement('span');
-      a.append(img, cap);
-      slides.replaceChildren(a);
-
-      let i = 0;
-      const show = () => {
-        const h = hits[i];
-        a.href = h.page;
-        img.src = h.preview;
-        img.alt = h.tags;
-        cap.textContent = (i + 1) + ' / ' + hits.length + ' · ' + h.tags;
-        i = (i + 1) % hits.length;
-      };
-      show();
-      timer = setInterval(show, SLIDE_MS);
+    function startSlideshow() {
+      clearInterval(timer);
+      gImg.hidden = true;
+      gPage.textContent = '';
+      if (!images.length) return;
+      index = 0;
+      showSlide();
+      timer = setInterval(() => {
+        index = (index + 1) % images.length;
+        showSlide();
+      }, SLIDE_MS);
     }
 
-    async function load() {
-      stopSlideshow();
-      msg.textContent = '불러오는 중...';
-      slides.replaceChildren();
-      prev.disabled = next.disabled = true;
+    async function searchImages() {
+      const q = gQuery.value.trim();
+      if (!q) { gStatus.textContent = '검색어를 입력해 주세요.'; return; }
+      gStatus.textContent = '검색 중...';
       try {
-        const r = await fetch('/api/pixabay?q=' + encodeURIComponent(query) + '&page=' + page);
-        const data = await r.json();
-        if (!r.ok) throw new Error(data.error || '요청에 실패했습니다.');
-        total = data.total;
-        if (!data.hits.length) {
-          msg.textContent = '검색 결과가 없습니다.';
-          info.textContent = '';
-          return;
-        }
-        msg.textContent = '';
-        startSlideshow(data.hits);
-        const pages = Math.max(1, Math.ceil(total / PER_PAGE));
-        info.textContent = page + ' / ' + pages + ' 페이지 (총 ' + total + '장)';
-        prev.disabled = page <= 1;
-        next.disabled = page >= pages;
+        const res = await fetch('/api/pixabay?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `오류 (${res.status})`);
+        images = data.hits;
+        gStatus.textContent = images.length ? `"${q}" 검색 결과 ${images.length}장 · 1초마다 넘어갑니다` : '검색 결과가 없습니다.';
+        startSlideshow();
       } catch (e) {
-        msg.textContent = '오류: ' + e.message;
-        info.textContent = '';
+        gStatus.textContent = e.message;
       }
     }
 
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const v = qInput.value.trim();
-      if (!v) return;
-      query = v;
-      page = 1;
-      load();
-    });
-    prev.addEventListener('click', () => { page--; load(); });
-    next.addEventListener('click', () => { page++; load(); });
+    document.getElementById('gSearch').addEventListener('click', searchImages);
+    gQuery.addEventListener('keydown', e => { if (e.key === 'Enter') searchImages(); });
   </script>
 </body>
 </html>
