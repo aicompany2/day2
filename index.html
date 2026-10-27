@@ -93,10 +93,10 @@
       background: #ff7a00; color: #fff; cursor: pointer; font-weight: bold;
     }
     #gallery button:disabled { background: #ccc; cursor: default; }
-    #slides { display: flex; gap: .8rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .5rem; }
-    #slides a { flex: 0 0 220px; scroll-snap-align: start; text-decoration: none; color: inherit; }
-    #slides img { width: 220px; height: 150px; object-fit: cover; border-radius: 10px; display: block; background: #eee; }
-    #slides span { display: block; font-size: .8rem; color: #666; margin-top: .2rem; }
+    #slides { text-align: center; }
+    #slides a { display: inline-block; text-decoration: none; color: inherit; }
+    #slides img { width: 100%; max-width: 560px; height: 360px; object-fit: cover; border-radius: 10px; display: block; background: #eee; }
+    #slides span { display: block; font-size: .85rem; color: #666; margin-top: .3rem; }
     .pager { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: .8rem; }
     #msg { text-align: center; color: #888; padding: 1rem 0; }
 
@@ -241,7 +241,40 @@
     const prev = document.getElementById('prev');
     const next = document.getElementById('next');
 
+    const SLIDE_MS = 500;
+    let timer = null;
+
+    function stopSlideshow() {
+      if (timer) clearInterval(timer);
+      timer = null;
+    }
+
+    // 이미지를 하나씩 0.5초마다 바꿔 보여주고, 끝나면 처음부터 반복한다.
+    function startSlideshow(hits) {
+      stopSlideshow();
+      const a = document.createElement('a');
+      a.target = '_blank';
+      a.rel = 'noopener';
+      const img = document.createElement('img');
+      const cap = document.createElement('span');
+      a.append(img, cap);
+      slides.replaceChildren(a);
+
+      let i = 0;
+      const show = () => {
+        const h = hits[i];
+        a.href = h.page;
+        img.src = h.preview;
+        img.alt = h.tags;
+        cap.textContent = (i + 1) + ' / ' + hits.length + ' · ' + h.tags;
+        i = (i + 1) % hits.length;
+      };
+      show();
+      timer = setInterval(show, SLIDE_MS);
+    }
+
     async function load() {
+      stopSlideshow();
       msg.textContent = '불러오는 중...';
       slides.replaceChildren();
       prev.disabled = next.disabled = true;
@@ -256,21 +289,7 @@
           return;
         }
         msg.textContent = '';
-        data.hits.forEach((h) => {
-          const a = document.createElement('a');
-          a.href = h.page;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          const img = document.createElement('img');
-          img.src = h.preview;
-          img.alt = h.tags;
-          img.loading = 'lazy';
-          const cap = document.createElement('span');
-          cap.textContent = h.tags;
-          a.append(img, cap);
-          slides.append(a);
-        });
-        slides.scrollLeft = 0;
+        startSlideshow(data.hits);
         const pages = Math.max(1, Math.ceil(total / PER_PAGE));
         info.textContent = page + ' / ' + pages + ' 페이지 (총 ' + total + '장)';
         prev.disabled = page <= 1;
