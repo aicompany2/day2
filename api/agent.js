@@ -2,7 +2,7 @@
 // 열쇠는 환경변수 GEMINI_API_KEY 에서만 읽는다.
 // 디버깅용: Gemini 서버가 준 응답을 가공하지 않고 raw 에 그대로 담아 돌려준다. 실패해도 숨기지 않는다.
 
-const { TOOLS, RAIN, runTool, toolStep, finish, practiceAgent } = require('./tools');
+const { TOOLS, RAIN, runTool, toolStep, finish, practiceAgent } = require('../lib/tools');
 
 const MAX_TURNS = 5;                                       // 에이전트 반복은 5번까지
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
