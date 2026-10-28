@@ -84,7 +84,7 @@ let mapN = 0
 function render(box, r) {
   const id = 'map' + (++mapN)
   let h = r.mode === 'ai' ? '' : '<span class="mode">' + (r.mode === 'practice' ? '연습 모드' : 'Gemini 오류') + '</span>'
-  if (r.error) h += '<div class="judge" style="color:#C0392B">' + esc(r.error) + '</div>
+  if (r.error) h += '<div class="judge" style="color:#C0392B">' + esc(r.error) + '</div>'
   if (r.judge) h += '<div class="judge">' + esc(r.judge) + '</div>'
   if (r.weather && r.weather.ok) h += `<div class="wx">☁ ${esc(r.weather.area)} ${esc(r.weather.day)} · 강수확률 ${r.weather.rain_prob}% · 최고 ${r.weather.tmax}℃</div>`
   if (r.places && r.places.length) {
