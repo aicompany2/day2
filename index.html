@@ -1,336 +1,105 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>제주 특산물 홍보관</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f4f8f3;
-      color: #222;
-      line-height: 1.6;
-    }
-    .page {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: clamp(8px, 2vw, 20px);
-      display: grid;
-      gap: clamp(8px, 1.5vw, 16px);
-      grid-template-columns: 2fr 1fr;
-      grid-template-areas:
-        "header  header"
-        "nav     nav"
-        "section aside"
-        "article aside"
-        "gallery gallery"
-        "footer  footer";
-    }
-    #gallery { grid-area: gallery; background: #fff; border-radius: 12px; padding: 18px 20px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); }
-    .search { display: flex; gap: 8px; margin-bottom: 8px; }
-    .search input { flex: 1; padding: 10px 12px; font-size: 1rem; border: 1px solid #c9d1d9; border-radius: 8px; }
-    .search button { padding: 10px 20px; font-size: 1rem; border: none; border-radius: 8px; background: #2f6f3e; color: #fff; cursor: pointer; }
-    #gStatus { min-height: 1.5em; color: #555; font-size: 0.92rem; margin-bottom: 10px; }
-    .slider { max-width: 560px; margin: 0 auto; }
-    .slider img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; background: #dde3ea; display: block; }
-    #gPage { text-align: center; margin-top: 8px; color: #555; font-size: 0.9rem; }
-
-    #chatToggle {
-      position: fixed; right: 20px; bottom: 20px; z-index: 20;
-      border: none; border-radius: 999px; padding: 14px 22px;
-      background: #ff7b00; color: #fff; font-size: 1rem; font-weight: bold;
-      cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    }
-    #chatToggle:hover { background: #e66f00; }
-    #chatPanel {
-      position: fixed; right: 20px; bottom: 80px; z-index: 20;
-      width: 360px; height: 520px; max-width: calc(100vw - 24px); max-height: calc(100vh - 100px);
-      border-radius: 14px; overflow: hidden; background: #fff;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    }
-    #chatPanel iframe { width: 100%; height: 100%; border: 0; display: block; }
-    #chatPanel[hidden] { display: none; }
-    header { grid-area: header; }
-    nav { grid-area: nav; }
-    #products { grid-area: section; }
-    #story { grid-area: article; }
-    aside { grid-area: aside; }
-    footer { grid-area: footer; }
-
-    header {
-      background: linear-gradient(135deg, #ff9f1c, #ff7b00);
-      color: #fff;
-      text-align: center;
-      padding: 32px 16px;
-      border-radius: 12px;
-    }
-    header h1 { margin: 0 0 6px; font-size: clamp(1.4rem, 4vw + 0.5rem, 2.2rem); }
-    header p { margin: 0; opacity: 0.95; }
-
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      background: #fff;
-      padding: 10px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    }
-    nav a {
-      text-decoration: none;
-      color: #2f6f3e;
-      background: #e6f3e8;
-      padding: 8px 18px;
-      border-radius: 999px;
-      font-weight: bold;
-    }
-    nav a:hover { background: #2f6f3e; color: #fff; }
-
-    section, article, aside {
-      background: #fff;
-      border-radius: 12px;
-      padding: 18px 20px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    }
-    h2 { margin: 0 0 12px; font-size: 1.3rem; color: #2f6f3e; }
-
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-    .item { border: 1px solid #e3ebe2; border-radius: 10px; padding: 12px; background: #fbfdfb; }
-    .item .emoji { font-size: 2rem; }
-    .item h3 { margin: 4px 0; font-size: 1.05rem; }
-    .item p { margin: 0; color: #555; font-size: 0.92rem; }
-    .item .season { margin-top: 6px; font-size: 0.8rem; color: #d96b00; font-weight: bold; }
-
-    article p { margin: 0 0 10px; }
-    article ul { margin: 0; padding-left: 20px; }
-
-    aside h2 { font-size: 1.1rem; }
-    aside ul { list-style: none; margin: 0 0 16px; padding: 0; }
-    aside li { padding: 6px 0; border-bottom: 1px dashed #dde6dc; font-size: 0.92rem; }
-    .like-btn {
-      width: 100%;
-      border: none;
-      background: #ffe3e8;
-      color: #d6336c;
-      padding: 10px;
-      border-radius: 999px;
-      font-size: 1.05rem;
-      cursor: pointer;
-    }
-    .like-btn:hover { background: #ffd0da; }
-
-    footer {
-      background: #2f6f3e;
-      color: #e6f3e8;
-      text-align: center;
-      padding: 16px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-    }
-
-    /* 태블릿: 오른쪽 aside를 좁게 */
-    @media (max-width: 960px) {
-      .page { grid-template-columns: 3fr 2fr; }
-    }
-
-    /* 모바일: 한 줄로 쌓기 */
-    @media (max-width: 720px) {
-      .page {
-        grid-template-columns: 1fr;
-        grid-template-areas: "header" "nav" "section" "article" "aside" "gallery" "footer";
-      }
-      header { padding: 22px 12px; }
-      nav { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      nav a { flex: none; padding: 10px 16px; }
-      .search { flex-direction: column; }
-      .search button, .like-btn { min-height: 44px; }
-      #chatToggle { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); padding: 12px 18px; }
-      #chatPanel {
-        right: 0; left: 0; bottom: 0; top: 0;
-        width: 100%; height: 100%; max-width: none; max-height: none;
-        border-radius: 0;
-      }
-      #chatToggle { z-index: 30; }
-    }
-
-    /* reactive.html 로 이동하는 큰 원형 버튼 (왼쪽 아래 고정, 오른쪽의 채팅 버튼과 겹치지 않게) */
-    .go-reactive {
-      position: fixed;
-      left: 1.2rem;
-      bottom: 1.2rem;
-      z-index: 25;
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      background: #1f3a5f;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: .95rem;
-      line-height: 1.3;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
-      transition: transform .2s, background .2s;
-    }
-    .go-reactive .icon { font-size: 2rem; line-height: 1; }
-    .go-reactive:hover, .go-reactive:focus-visible { transform: scale(1.08); background: #2e5a94; }
-    @media (max-width: 720px) {
-      .go-reactive { width: 88px; height: 88px; font-size: .8rem; left: .8rem; bottom: .8rem; }
-      .go-reactive .icon { font-size: 1.6rem; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지금 지구의 지진</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        html, body { margin: 0; height: 100%; background: #0b0f1a; color: #e8ecf5; font-family: sans-serif; }
+        #map { position: absolute; inset: 0; background: #0b0f1a; }
+        .panel { position: absolute; z-index: 1000; background: rgba(11,15,26,.85); backdrop-filter: blur(6px);
+                 border: 1px solid #2a3350; border-radius: 12px; padding: 12px 14px; }
+        #top { top: 12px; left: 12px; width: 260px; }
+        #top h1 { margin: 0 0 8px; font-size: 18px; }
+        #top label { display: block; margin-top: 8px; font-size: 13px; color: #9aa6c4; }
+        #top select, #top input { width: 100%; margin-top: 4px; }
+        #stat { margin-top: 10px; font-size: 13px; }
+        #list { bottom: 12px; right: 12px; width: 300px; max-height: 40vh; overflow: auto; font-size: 13px; }
+        #list h2 { margin: 0 0 6px; font-size: 14px; }
+        #list div { padding: 5px 0; border-top: 1px solid #1f2742; cursor: pointer; }
+        #list b { color: #ff6b4a; }
+        .pulse { animation: pulse 1.6s ease-out infinite; transform-origin: center; transform-box: fill-box; }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2.6); } }
+        @media (max-width: 640px) { #list { display: none; } }
+    </style>
 </head>
 <body>
-  <div class="page">
-    <header>
-      <h1>🍊 제주 특산물 홍보관</h1>
-      <p>바람과 햇살, 바다가 키운 제주의 맛을 만나보세요</p>
-    </header>
+    <div id="map"></div>
 
-    <nav>
-      <a href="#products">🛒 대표 특산물</a>
-      <a href="#story">📖 제주의 맛 이야기</a>
-      <a href="#season">📅 제철 달력</a>
-      <a href="#gallery">🖼️ 사진 검색</a>
-    </nav>
+    <div id="top" class="panel">
+        <h1>🌍 지금 지구의 지진</h1>
+        <label>기간
+            <select id="period">
+                <option value="all_hour">지난 1시간</option>
+                <option value="all_day" selected>지난 24시간</option>
+                <option value="2.5_week">지난 7일 (규모 2.5↑)</option>
+            </select>
+        </label>
+        <label>최소 규모 <span id="minv">0</span>
+            <input id="min" type="range" min="0" max="7" step="0.5" value="0">
+        </label>
+        <div id="stat">불러오는 중…</div>
+        <div style="margin-top:6px;font-size:11px;color:#6b7799">데이터: USGS · 1분마다 갱신</div>
+    </div>
+    <div id="list" class="panel"><h2>가장 큰 지진 TOP 10</h2><div id="rows"></div></div>
 
-    <section id="products">
-      <h2>🛒 대표 특산물</h2>
-      <div class="grid">
-        <div class="item"><div class="emoji">🍊</div><h3>감귤</h3><p>새콤달콤한 맛으로 제주를 대표하는 과일입니다.</p><div class="season">제철: 가을~겨울</div></div>
-        <div class="item"><div class="emoji">🍋</div><h3>한라봉</h3><p>향이 진하고 과즙이 풍부한 만감류입니다.</p><div class="season">제철: 겨울~봄</div></div>
-        <div class="item"><div class="emoji">🐖</div><h3>흑돼지</h3><p>쫄깃하고 고소한 맛의 제주 대표 고기입니다.</p><div class="season">제철: 사계절</div></div>
-        <div class="item"><div class="emoji">🐟</div><h3>갈치</h3><p>은빛 갈치로 만드는 구이와 조림이 인기입니다.</p><div class="season">제철: 여름~가을</div></div>
-        <div class="item"><div class="emoji">🍡</div><h3>오메기떡</h3><p>차조로 만든 쫀득한 제주 전통 떡입니다.</p><div class="season">제철: 사계절</div></div>
-        <div class="item"><div class="emoji">🥜</div><h3>당근·감자·마늘</h3><p>제주 땅에서 자란 신선한 농산물입니다.</p><div class="season">제철: 품목별 상이</div></div>
-      </div>
-    </section>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const FEED = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/"
+        const map = L.map("map", { worldCopyJump: true, minZoom: 2 }).setView([20, 130], 3)
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+            { attribution: "© OpenStreetMap © CARTO", subdomains: "abcd" }).addTo(map)
+        const layer = L.layerGroup().addTo(map)
+        let quakes = []
 
-    <article id="story">
-      <h2>📖 제주의 맛 이야기</h2>
-      <p>화산섬 제주의 토양과 따뜻한 바닷바람은 독특한 맛을 가진 농수산물을 길러냅니다. 정성껏 키운 특산물은 선물용으로도, 집밥 재료로도 사랑받고 있습니다.</p>
-      <p>특산물을 더 즐겁게 고르는 방법</p>
-      <ul>
-        <li>제철 시기를 확인하면 가장 맛있을 때 먹을 수 있어요.</li>
-        <li>선물용은 포장과 배송 기간을 미리 살펴보세요.</li>
-        <li>여행 중 시장과 직판장을 들러 직접 맛보고 고르는 것도 좋아요.</li>
-      </ul>
-    </article>
+        const color = depth => depth < 70 ? "#ff6b4a" : depth < 300 ? "#ffc24a" : "#4ac8ff"   // 얕을수록 붉게
+        const ago = t => {
+            const m = Math.round((Date.now() - t) / 60000)
+            return m < 60 ? `${m}분 전` : m < 1440 ? `${Math.round(m / 60)}시간 전` : `${Math.round(m / 1440)}일 전`
+        }
 
-    <aside id="season">
-      <h2>📅 제철 달력</h2>
-      <ul>
-        <li>🍊 11~1월 : 감귤</li>
-        <li>🍋 1~4월 : 한라봉</li>
-        <li>🐟 7~10월 : 갈치</li>
-        <li>🍡 연중 : 오메기떡</li>
-      </ul>
-      <h2>👍 이 사이트가 좋았다면</h2>
-      <button id="likeBtn" class="like-btn">❤️ 좋아요 <span id="likeCount">0</span></button>
-    </aside>
+        function draw() {
+            const min = +document.getElementById("min").value
+            document.getElementById("minv").textContent = min
+            layer.clearLayers()
+            const shown = quakes.filter(q => (q.properties.mag ?? 0) >= min)
+            for (const q of shown) {
+                const [lon, lat, depth] = q.geometry.coordinates
+                const mag = q.properties.mag ?? 0
+                const c = color(depth)
+                const recent = Date.now() - q.properties.time < 3600000
+                const label = `<b>M${mag.toFixed(1)}</b> ${q.properties.place}<br>${ago(q.properties.time)} · 깊이 ${Math.round(depth)}km<br><a href="${q.properties.url}" target="_blank">상세 보기</a>`
+                if (recent) L.circleMarker([lat, lon], { radius: 4 + mag * 3, color: c, weight: 2, fill: false, className: "pulse" }).addTo(layer)
+                L.circleMarker([lat, lon], { radius: 2 + mag * 2.5, color: c, weight: 1, fillColor: c, fillOpacity: .45 })
+                    .addTo(layer).bindPopup(label)
+            }
+            document.getElementById("stat").textContent = `${shown.length}건 표시 (전체 ${quakes.length}건)`
+            const top = [...shown].sort((a, b) => b.properties.mag - a.properties.mag).slice(0, 10)
+            const rows = document.getElementById("rows")
+            rows.innerHTML = ""
+            for (const q of top) {
+                const d = document.createElement("div")
+                d.innerHTML = `<b>M${q.properties.mag.toFixed(1)}</b> ${q.properties.place}<br><small>${ago(q.properties.time)}</small>`
+                d.onclick = () => map.flyTo([q.geometry.coordinates[1], q.geometry.coordinates[0]], 6)
+                rows.appendChild(d)
+            }
+        }
 
-    <section id="gallery">
-      <h2>🖼️ 제주 사진 검색</h2>
-      <div class="search">
-        <input id="gQuery" type="text" placeholder="검색어 입력 (예: jeju, tangerine)">
-        <button id="gSearch">검색</button>
-      </div>
-      <div id="gStatus">검색어를 입력하면 사진을 1초마다 한 장씩 보여드려요.</div>
-      <div class="slider">
-        <img id="gImg" alt="" hidden>
-      </div>
-      <div id="gPage"></div>
-    </section>
+        async function load() {
+            try {
+                const r = await fetch(FEED + document.getElementById("period").value + ".geojson")
+                quakes = (await r.json()).features
+                draw()
+            } catch (e) {
+                document.getElementById("stat").textContent = "데이터를 가져오지 못했어요"
+            }
+        }
 
-    <a class="go-reactive" href="reactive.html" aria-label="반응형 메뉴 페이지로 이동">
-    <span class="icon">🧭</span>
-    <span>반응형<br>메뉴</span>
-  </a>
-
-  <footer>
-      © 2026 제주 특산물 홍보관 · 제철과 가격은 변동될 수 있으니 구매 전 확인해 주세요.
-    </footer>
-  </div>
-
-  <button id="chatToggle">💬 에이전트와 채팅</button>
-  <div id="chatPanel" hidden>
-    <iframe id="chatFrame" title="제주 여행 에이전트 채팅"></iframe>
-  </div>
-
-  <script>
-    const chatToggle = document.getElementById('chatToggle');
-    const chatPanel = document.getElementById('chatPanel');
-    const chatFrame = document.getElementById('chatFrame');
-    chatToggle.addEventListener('click', () => {
-      const opening = chatPanel.hidden;
-      if (opening && !chatFrame.src) chatFrame.src = 'agent.html';
-      chatPanel.hidden = !opening;
-      chatToggle.textContent = opening ? '✖ 채팅 닫기' : '💬 에이전트와 채팅';
-    });
-
-    let likes = 0;
-    const likeCount = document.getElementById('likeCount');
-    document.getElementById('likeBtn').addEventListener('click', () => {
-      likes++;
-      likeCount.textContent = likes;
-    });
-
-    // 사진 검색 슬라이더 (API Key는 서버의 /api/pixabay 가 환경변수로 처리)
-    const SLIDE_MS = 1000;
-    const gQuery = document.getElementById('gQuery');
-    const gStatus = document.getElementById('gStatus');
-    const gImg = document.getElementById('gImg');
-    const gPage = document.getElementById('gPage');
-    let images = [];
-    let index = 0;
-    let timer = null;
-
-    function showSlide() {
-      const img = images[index];
-      gImg.src = img.webformatURL;
-      gImg.alt = img.tags;
-      gImg.hidden = false;
-      gPage.textContent = `${index + 1} / ${images.length}`;
-    }
-
-    function startSlideshow() {
-      clearInterval(timer);
-      gImg.hidden = true;
-      gPage.textContent = '';
-      if (!images.length) return;
-      index = 0;
-      showSlide();
-      timer = setInterval(() => {
-        index = (index + 1) % images.length;
-        showSlide();
-      }, SLIDE_MS);
-    }
-
-    async function searchImages() {
-      const q = gQuery.value.trim();
-      if (!q) { gStatus.textContent = '검색어를 입력해 주세요.'; return; }
-      gStatus.textContent = '검색 중...';
-      try {
-        const res = await fetch('/api/pixabay?q=' + encodeURIComponent(q));
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `오류 (${res.status})`);
-        images = data.hits;
-        gStatus.textContent = images.length ? `"${q}" 검색 결과 ${images.length}장 · 1초마다 넘어갑니다` : '검색 결과가 없습니다.';
-        startSlideshow();
-      } catch (e) {
-        gStatus.textContent = e.message;
-      }
-    }
-
-    document.getElementById('gSearch').addEventListener('click', searchImages);
-    gQuery.addEventListener('keydown', e => { if (e.key === 'Enter') searchImages(); });
-  </script>
+        document.getElementById("period").onchange = load
+        document.getElementById("min").oninput = draw
+        load()
+        setInterval(load, 60000)
+    </script>
 </body>
 </html>
