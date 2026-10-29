@@ -8,11 +8,14 @@
   html, body { margin: 0; height: 100%; overflow: hidden; background: #05060f; }
   canvas { display: block; }
   #go {
-    position: fixed; right: 16px; top: 14px; padding: 10px 18px; border-radius: 8px;
-    background: #1c2a55; color: #cfe0ff; border: 1px solid #4a5fa0; text-decoration: none;
-    font: 14px system-ui, sans-serif; z-index: 1;
+    position: fixed; right: 16px; top: 14px; z-index: 1; display: flex; gap: 8px;
   }
-  #go:hover { background: #2a3d7a; }
+  #go a {
+    padding: 10px 18px; border-radius: 8px;
+    background: #1c2a55; color: #cfe0ff; border: 1px solid #4a5fa0; text-decoration: none;
+    font: 14px system-ui, sans-serif;
+  }
+  #go a:hover { background: #2a3d7a; }
   #hint {
     position: fixed; left: 16px; bottom: 12px; color: #8fa0c8;
     font: 13px/1.4 system-ui, sans-serif; pointer-events: none;
@@ -26,7 +29,7 @@
 </script>
 </head>
 <body>
-<a id="go" href="space.html">🚀 우주 여행 시작</a>
+<div id="go"><a href="space.html">🚀 우주 여행 시작</a> <a href="jeju.html">🌋 제주도 여행</a></div>
 <div id="hint">드래그: 회전 · 휠: 확대/축소 · 클릭: 색상 변경</div>
 <script type="module">
 import * as THREE from 'three';
