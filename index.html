@@ -1,105 +1,143 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>지금 지구의 지진</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <style>
-        html, body { margin: 0; height: 100%; background: #0b0f1a; color: #e8ecf5; font-family: sans-serif; }
-        #map { position: absolute; inset: 0; background: #0b0f1a; }
-        .panel { position: absolute; z-index: 1000; background: rgba(11,15,26,.85); backdrop-filter: blur(6px);
-                 border: 1px solid #2a3350; border-radius: 12px; padding: 12px 14px; }
-        #top { top: 12px; left: 12px; width: 260px; }
-        #top h1 { margin: 0 0 8px; font-size: 18px; }
-        #top label { display: block; margin-top: 8px; font-size: 13px; color: #9aa6c4; }
-        #top select, #top input { width: 100%; margin-top: 4px; }
-        #stat { margin-top: 10px; font-size: 13px; }
-        #list { bottom: 12px; right: 12px; width: 300px; max-height: 40vh; overflow: auto; font-size: 13px; }
-        #list h2 { margin: 0 0 6px; font-size: 14px; }
-        #list div { padding: 5px 0; border-top: 1px solid #1f2742; cursor: pointer; }
-        #list b { color: #ff6b4a; }
-        .pulse { animation: pulse 1.6s ease-out infinite; transform-origin: center; transform-box: fill-box; }
-        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2.6); } }
-        @media (max-width: 640px) { #list { display: none; } }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>three.js Animation</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #05060f; }
+  canvas { display: block; }
+  #go {
+    position: fixed; right: 16px; top: 14px; padding: 10px 18px; border-radius: 8px;
+    background: #1c2a55; color: #cfe0ff; border: 1px solid #4a5fa0; text-decoration: none;
+    font: 14px system-ui, sans-serif; z-index: 1;
+  }
+  #go:hover { background: #2a3d7a; }
+  #hint {
+    position: fixed; left: 16px; bottom: 12px; color: #8fa0c8;
+    font: 13px/1.4 system-ui, sans-serif; pointer-events: none;
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
 </head>
 <body>
-    <div id="map"></div>
+<a id="go" href="space.html">🚀 우주 여행 시작</a>
+<div id="hint">드래그: 회전 · 휠: 확대/축소 · 클릭: 색상 변경</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    <div id="top" class="panel">
-        <h1>🌍 지금 지구의 지진</h1>
-        <label>기간
-            <select id="period">
-                <option value="all_hour">지난 1시간</option>
-                <option value="all_day" selected>지난 24시간</option>
-                <option value="2.5_week">지난 7일 (규모 2.5↑)</option>
-            </select>
-        </label>
-        <label>최소 규모 <span id="minv">0</span>
-            <input id="min" type="range" min="0" max="7" step="0.5" value="0">
-        </label>
-        <div id="stat">불러오는 중…</div>
-        <div style="margin-top:6px;font-size:11px;color:#6b7799">데이터: USGS · 1분마다 갱신</div>
-    </div>
-    <div id="list" class="panel"><h2>가장 큰 지진 TOP 10</h2><div id="rows"></div></div>
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x05060f, 0.025);
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const FEED = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/"
-        const map = L.map("map", { worldCopyJump: true, minZoom: 2 }).setView([20, 130], 3)
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-            { attribution: "© OpenStreetMap © CARTO", subdomains: "abcd" }).addTo(map)
-        const layer = L.layerGroup().addTo(map)
-        let quakes = []
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 2, 14);
 
-        const color = depth => depth < 70 ? "#ff6b4a" : depth < 300 ? "#ffc24a" : "#4ac8ff"   // 얕을수록 붉게
-        const ago = t => {
-            const m = Math.round((Date.now() - t) / 60000)
-            return m < 60 ? `${m}분 전` : m < 1440 ? `${Math.round(m / 60)}시간 전` : `${Math.round(m / 1440)}일 전`
-        }
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
 
-        function draw() {
-            const min = +document.getElementById("min").value
-            document.getElementById("minv").textContent = min
-            layer.clearLayers()
-            const shown = quakes.filter(q => (q.properties.mag ?? 0) >= min)
-            for (const q of shown) {
-                const [lon, lat, depth] = q.geometry.coordinates
-                const mag = q.properties.mag ?? 0
-                const c = color(depth)
-                const recent = Date.now() - q.properties.time < 3600000
-                const label = `<b>M${mag.toFixed(1)}</b> ${q.properties.place}<br>${ago(q.properties.time)} · 깊이 ${Math.round(depth)}km<br><a href="${q.properties.url}" target="_blank">상세 보기</a>`
-                if (recent) L.circleMarker([lat, lon], { radius: 4 + mag * 3, color: c, weight: 2, fill: false, className: "pulse" }).addTo(layer)
-                L.circleMarker([lat, lon], { radius: 2 + mag * 2.5, color: c, weight: 1, fillColor: c, fillOpacity: .45 })
-                    .addTo(layer).bindPopup(label)
-            }
-            document.getElementById("stat").textContent = `${shown.length}건 표시 (전체 ${quakes.length}건)`
-            const top = [...shown].sort((a, b) => b.properties.mag - a.properties.mag).slice(0, 10)
-            const rows = document.getElementById("rows")
-            rows.innerHTML = ""
-            for (const q of top) {
-                const d = document.createElement("div")
-                d.innerHTML = `<b>M${q.properties.mag.toFixed(1)}</b> ${q.properties.place}<br><small>${ago(q.properties.time)}</small>`
-                d.onclick = () => map.flyTo([q.geometry.coordinates[1], q.geometry.coordinates[0]], 6)
-                rows.appendChild(d)
-            }
-        }
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.6;
 
-        async function load() {
-            try {
-                const r = await fetch(FEED + document.getElementById("period").value + ".geojson")
-                quakes = (await r.json()).features
-                draw()
-            } catch (e) {
-                document.getElementById("stat").textContent = "데이터를 가져오지 못했어요"
-            }
-        }
+// Lights
+scene.add(new THREE.AmbientLight(0x404060, 1.5));
+const light1 = new THREE.PointLight(0xff4fa3, 120, 60);
+const light2 = new THREE.PointLight(0x35d0ff, 120, 60);
+scene.add(light1, light2);
 
-        document.getElementById("period").onchange = load
-        document.getElementById("min").oninput = draw
-        load()
-        setInterval(load, 60000)
-    </script>
+// Central torus knot
+const knot = new THREE.Mesh(
+  new THREE.TorusKnotGeometry(2.2, 0.65, 220, 32),
+  new THREE.MeshStandardMaterial({ color: 0x8a6bff, metalness: 0.7, roughness: 0.25 })
+);
+scene.add(knot);
+
+// Wireframe shell
+const shell = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(5, 1),
+  new THREE.MeshBasicMaterial({ color: 0x35d0ff, wireframe: true, transparent: true, opacity: 0.25 })
+);
+scene.add(shell);
+
+// Orbiting spheres
+const orbiters = [];
+for (let i = 0; i < 12; i++) {
+  const m = new THREE.Mesh(
+    new THREE.SphereGeometry(0.22, 24, 24),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color().setHSL(i / 12, 0.9, 0.6),
+      emissive: new THREE.Color().setHSL(i / 12, 0.9, 0.35),
+    })
+  );
+  m.userData = { r: 6.5 + (i % 3) * 0.8, speed: 0.4 + (i % 4) * 0.15, phase: (i / 12) * Math.PI * 2, tilt: (i % 5) * 0.35 };
+  orbiters.push(m);
+  scene.add(m);
+}
+
+// Starfield
+const N = 2500;
+const pos = new Float32Array(N * 3);
+for (let i = 0; i < N; i++) {
+  const r = 30 + Math.random() * 70;
+  const t = Math.random() * Math.PI * 2;
+  const p = Math.acos(2 * Math.random() - 1);
+  pos[i * 3] = r * Math.sin(p) * Math.cos(t);
+  pos[i * 3 + 1] = r * Math.sin(p) * Math.sin(t);
+  pos[i * 3 + 2] = r * Math.cos(p);
+}
+const starGeo = new THREE.BufferGeometry();
+starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.18, sizeAttenuation: true }));
+scene.add(stars);
+
+// Click: random palette
+addEventListener('click', () => {
+  const h = Math.random();
+  knot.material.color.setHSL(h, 0.8, 0.6);
+  light1.color.setHSL(h, 1, 0.6);
+  light2.color.setHSL((h + 0.5) % 1, 1, 0.6);
+});
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+
+  knot.rotation.x = t * 0.3;
+  knot.rotation.y = t * 0.45;
+  knot.scale.setScalar(1 + Math.sin(t * 1.5) * 0.06);
+
+  shell.rotation.y = -t * 0.15;
+  shell.rotation.z = t * 0.1;
+
+  for (const o of orbiters) {
+    const { r, speed, phase, tilt } = o.userData;
+    const a = t * speed + phase;
+    o.position.set(Math.cos(a) * r, Math.sin(a * 2) * 1.5 + Math.sin(a) * r * Math.sin(tilt), Math.sin(a) * r * Math.cos(tilt));
+  }
+
+  light1.position.set(Math.cos(t) * 8, Math.sin(t * 0.7) * 5, Math.sin(t) * 8);
+  light2.position.set(-Math.cos(t * 0.8) * 8, Math.cos(t * 0.5) * 5, -Math.sin(t * 0.8) * 8);
+
+  stars.rotation.y = t * 0.01;
+
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
 </body>
 </html>
