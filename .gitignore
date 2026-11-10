@@ -1,0 +1,7 @@
+vjeju/
+.venv/
+.env
+__pycache__/
+*.pyc
+my-api/
+uvicorn.log

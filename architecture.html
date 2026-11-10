@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제주 사이트 구조 쉽게 보기</title>
+<style>
+  :root{--bg:#f4faf9;--card:#fff;--text:#243238;--muted:#6b7c82;--main:#0a8f8a;--accent:#ff8a3d;
+        --c1:#e8f1ff;--c2:#e0f4f2;--c3:#fff1e0;--c4:#efe6ff}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Malgun Gothic',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:0 16px 60px}
+  .wrap{max-width:980px;margin:auto}
+  h1{text-align:center;margin:36px 0 6px;font-size:clamp(1.5rem,4vw,2.1rem);color:#06494a}
+  .lead{text-align:center;color:var(--muted);margin-bottom:28px}
+  h2{font-size:1.2rem;margin:34px 0 12px;color:#06494a}
+  .card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 3px 12px rgba(0,0,0,.07)}
+
+  /* 비유 */
+  .analogy{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .analogy div{border-radius:12px;padding:14px;font-size:.92rem}
+  .analogy b{display:block;font-size:1rem;margin-bottom:2px}
+
+  /* 무대 */
+  .toggle{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+  .toggle button,.ctrl button{font-family:inherit;border:2px solid var(--main);background:#fff;color:var(--main);
+    padding:.45rem 1.1rem;border-radius:20px;font-weight:700;cursor:pointer}
+  .toggle button.on,.ctrl button.primary{background:var(--main);color:#fff}
+  .stage{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:24px 0 14px}
+  .node{text-align:center;border-radius:14px;padding:14px 6px;transition:.3s;border:3px solid transparent;position:relative;z-index:1}
+  .node .ic{font-size:2.1rem}
+  .node .nm{font-weight:700;font-size:.95rem}
+  .node .sub{font-size:.72rem;color:var(--muted);word-break:break-all}
+  .node.n1{background:var(--c1)}.node.n2{background:var(--c2)}.node.n3{background:var(--c3)}.node.n4{background:var(--c4)}
+  .node.active{border-color:var(--accent);transform:scale(1.06);box-shadow:0 6px 18px rgba(255,138,61,.35)}
+  .track{position:absolute;left:12.5%;right:12.5%;top:calc(24px + 46px);height:4px;background:repeating-linear-gradient(90deg,#c8d6d9 0 8px,transparent 8px 16px);z-index:0}
+  .packet{position:absolute;top:calc(24px + 46px - 16px);left:12.5%;width:36px;height:36px;margin-left:-18px;border-radius:50%;
+    background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;z-index:2;
+    box-shadow:0 4px 12px rgba(0,0,0,.25);transition:left .9s ease-in-out,background .3s}
+  .packet.back{background:var(--main)}
+  .caption{min-height:92px;border-radius:12px;background:#fff8ef;border-left:5px solid var(--accent);padding:12px 16px;margin-top:6px}
+  .caption .t{font-weight:700;margin-bottom:2px}
+  .caption .code{display:inline-block;margin-top:4px;background:#1f2a30;color:#bff5e9;font-family:Consolas,monospace;font-size:.82rem;padding:2px 8px;border-radius:6px;word-break:break-all}
+  .ctrl{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .dots{display:flex;justify-content:center;gap:6px;margin-top:12px}
+  .dots i{width:10px;height:10px;border-radius:50%;background:#cfdadd;transition:.3s}
+  .dots i.on{background:var(--accent);transform:scale(1.4)}
+
+  /* 파일 지도 */
+  .files{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+  .file{border:1px solid #dbe7e8;border-radius:12px;padding:12px 14px;background:#fff}
+  .file code{font-family:Consolas,monospace;font-weight:700;color:var(--main)}
+  .file p{font-size:.88rem;color:#46565c;margin-top:2px}
+  .tag{font-size:.7rem;font-weight:700;padding:1px 8px;border-radius:10px;margin-left:4px;vertical-align:middle}
+  .note{background:#fff;border-left:5px solid var(--main);padding:14px 16px;border-radius:10px;font-size:.92rem;margin-top:14px}
+  .secret{border-left-color:#d64545;background:#fff4f4}
+  @media(max-width:560px){.node .sub{display:none}.node .ic{font-size:1.6rem}.node .nm{font-size:.8rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏝️ 제주 사이트, 어떻게 돌아갈까?</h1>
+  <p class="lead">코드를 몰라도 괜찮아요. <b>식당</b>에 빗대어 한 번 따라가 봐요.</p>
+
+  <h2>① 식당으로 이해하기</h2>
+  <div class="card analogy">
+    <div style="background:var(--c1)"><b>🧑 손님 = 내 브라우저</b>크롬·엣지 같은 화면. 주문하는 사람이에요.</div>
+    <div style="background:var(--c2)"><b>🪑 홀 = 프런트엔드</b><code>index.html</code>. 손님이 보는 예쁜 화면, 메뉴판이에요.</div>
+    <div style="background:var(--c3)"><b>👨‍🍳 주방 = FastAPI 서버</b><code>main.py</code>. 주문을 받아 창고에서 재료를 꺼내 줘요.</div>
+    <div style="background:var(--c4)"><b>📦 창고 = Supabase</b>제주 관광지 데이터가 저장된 곳이에요.</div>
+  </div>
+
+  <h2>② 주문이 오가는 과정 (애니메이션)</h2>
+  <div class="card">
+    <div class="toggle">
+      <button id="mLocal" class="on">💻 지금 내 컴퓨터(테스트)</button>
+      <button id="mProd">🌍 인터넷에 배포했을 때</button>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="track"></div>
+      <div class="packet" id="packet">✉️</div>
+      <div class="node n1" id="n1"><div class="ic">🧑‍💻</div><div class="nm">브라우저</div><div class="sub">손님</div></div>
+      <div class="node n2" id="n2"><div class="ic">🪑</div><div class="nm">프런트엔드</div><div class="sub" id="sub2"></div></div>
+      <div class="node n3" id="n3"><div class="ic">👨‍🍳</div><div class="nm">FastAPI</div><div class="sub" id="sub3"></div></div>
+      <div class="node n4" id="n4"><div class="ic">📦</div><div class="nm">Supabase</div><div class="sub">데이터베이스</div></div>
+    </div>
+
+    <div class="caption" id="cap"></div>
+    <div class="dots" id="dots"></div>
+    <div class="ctrl">
+      <button id="bPrev">◀ 이전</button>
+      <button id="bPlay" class="primary">⏸ 멈춤</button>
+      <button id="bNext">다음 ▶</button>
+    </div>
+  </div>
+
+  <div class="note"><b>💡 헷갈리기 쉬운 점:</b> 지금 내 컴퓨터에서는 <b>Railway를 쓰지 않아요.</b>
+    <code>127.0.0.1:8000</code>(내 컴퓨터, 8000번 문)에서 <code>main.py</code>가 직접 돌아가요.
+    Railway는 나중에 이 <b>주방을 인터넷 위로 옮겨 24시간 켜 두는 건물</b>일 뿐이고, 프런트는 Vercel이 그 역할을 해요.
+    위 버튼으로 로컬/배포 모습을 비교해 보세요.</div>
+
+  <h2>③ 폴더 안 파일은 각각 뭘 할까?</h2>
+  <div class="files">
+    <div class="file"><code>frontend/index.html</code><span class="tag" style="background:var(--c2)">홀</span><p>제주 관광지 화면. 열리면 주방(API)에 "관광지 목록 주세요" 하고 물어봐요. 실패하면 내장 데이터를 대신 보여줘요.</p></div>
+    <div class="file"><code>my-api/main.py</code><span class="tag" style="background:var(--c3)">주방</span><p>주문 접수처. <code>/health</code>(영업 중?), <code>/spots</code>(목록), <code>/spots/번호</code>(하나만)를 처리해요.</p></div>
+    <div class="file"><code>my-api/.env</code><span class="tag" style="background:#ffd6d6">비밀</span><p>창고 열쇠(Supabase 주소·키)를 적어 둔 메모. 절대 남에게 보여주거나 git에 올리면 안 돼요.</p></div>
+    <div class="file"><code>supabase/schema.sql</code><span class="tag" style="background:var(--c4)">창고</span><p>창고에 "관광지 선반"을 만들고 12개 데이터를 채우는 설계도예요. Supabase에서 한 번만 실행해요.</p></div>
+    <div class="file"><code>my-api/requirements.txt</code><p>주방에 필요한 도구 목록(fastapi 등). Railway가 이걸 보고 알아서 설치해요.</p></div>
+    <div class="file"><code>my-api/Procfile</code><p>"주방 문 여는 방법" 한 줄. Railway가 이 명령으로 서버를 켜요.</p></div>
+  </div>
+
+  <div class="note secret"><b>🔑 왜 .env가 중요한가요?</b> Supabase의 secret 키는 창고 <b>마스터키</b>예요.
+    그래서 키는 주방(서버)만 갖고, 손님 화면(index.html)에는 절대 넣지 않아요.
+    손님은 항상 주방을 통해서만 창고를 이용해요.</div>
+
+  <h2>④ 용어 한 줄 정리</h2>
+  <div class="card" style="font-size:.92rem">
+    <b>API</b> = 주방의 주문 창구 · <b>포트(8000)</b> = 건물 안의 문 번호 · <b>127.0.0.1</b> = "내 컴퓨터" 주소 ·
+    <b>CORS</b> = 주방이 "이 가게(주소) 손님만 받겠다"고 정한 출입 명단 · <b>JSON</b> = 주방이 손님에게 건네는 데이터 쪽지
+  </div>
+</div>
+
+<script>
+const steps=[
+ {a:0,to:0,ic:'🧑‍💻',t:'1. 손님이 사이트 주소를 열어요',d:'브라우저에 주소를 입력합니다.'},
+ {a:1,to:1,ic:'📄',back:true,t:'2. 홀(프런트)이 화면을 내려보내요',d:'index.html이 브라우저로 전달되고, 제주 화면의 뼈대가 먼저 보여요.',code:'index.html'},
+ {a:2,to:2,ic:'✉️',t:'3. 화면이 주방에 주문을 넣어요',d:'"관광지 목록 주세요!" 라는 요청을 보냅니다.',code:'GET /spots'},
+ {a:2,to:2,ic:'👨‍🍳',t:'4. 주방(main.py)이 주문을 읽어요',d:'main.py의 list_spots 함수가 실행돼요. CORS 명단도 확인합니다.',code:'def list_spots(): ...'},
+ {a:3,to:3,ic:'🔑',t:'5. 주방이 열쇠로 창고에 물어봐요',d:'.env의 SUPABASE_URL·SECRET_KEY로 창고 문을 열고 spots 선반을 조회해요.',code:'sb.table("spots").select("*")'},
+ {a:3,to:2,ic:'📦',back:true,t:'6. 창고가 관광지 12개를 꺼내 줘요',d:'한라산, 성산일출봉, 우도… 데이터가 주방으로 돌아옵니다.'},
+ {a:2,to:1,ic:'🧾',back:true,t:'7. 주방이 JSON 쪽지로 포장해 답해요',d:'Spot 양식(이름·분류·설명…)에 맞는지 검사한 뒤 화면으로 보냅니다.',code:'[{"name":"한라산 국립공원", ...}]'},
+ {a:1,to:0,ic:'🎉',back:true,t:'8. 화면에 카드가 짜잔!',d:'받은 데이터로 관광지 카드를 그려요. 자연/바다/문화 버튼은 화면 안에서 바로 걸러줘요.'}
+];
+const modes={
+ local:{s2:'localhost:5500',s3:'127.0.0.1:8000'},
+ prod:{s2:'Vercel (인터넷)',s3:'Railway (인터넷)'}
+};
+let mode='local',cur=0,playing=true,timer=null;
+const $=id=>document.getElementById(id);
+const pos=i=>(12.5+25*i)+'%';
+function show(i){
+  cur=(i+steps.length)%steps.length;const s=steps[cur];
+  [0,1,2,3].forEach(k=>$('n'+(k+1)).classList.toggle('active',k===s.a));
+  const p=$('packet');p.style.left=pos(s.to);p.textContent=s.ic;p.classList.toggle('back',!!s.back);
+  $('cap').innerHTML='<div class="t">'+s.t+'</div>'+s.d+(s.code?'<br><span class="code">'+s.code+'</span>':'');
+  [...$('dots').children].forEach((d,k)=>d.classList.toggle('on',k===cur));
+}
+function setMode(m){
+  mode=m;$('mLocal').classList.toggle('on',m==='local');$('mProd').classList.toggle('on',m==='prod');
+  $('sub2').textContent=modes[m].s2;$('sub3').textContent=modes[m].s3;
+}
+function tick(){clearInterval(timer);if(playing)timer=setInterval(()=>show(cur+1),3200)}
+steps.forEach(()=>$('dots').appendChild(document.createElement('i')));
+$('mLocal').onclick=()=>setMode('local');$('mProd').onclick=()=>setMode('prod');
+$('bNext').onclick=()=>{show(cur+1);tick()};$('bPrev').onclick=()=>{show(cur-1);tick()};
+$('bPlay').onclick=()=>{playing=!playing;$('bPlay').textContent=playing?'⏸ 멈춤':'▶ 재생';tick()};
+setMode('local');show(0);tick();
+</script>
+</body>
+</html>

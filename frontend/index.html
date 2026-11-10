@@ -43,7 +43,7 @@
 <body>
 <header>
   <h1>🌴 제주 가이드</h1>
-  <nav><a href="#spots">관광지</a><a href="#tips">여행 팁</a></nav>
+  <nav><a href="#spots">관광지</a><a href="#tips">여행 팁</a><a href="shop.html">🛒 특산품 샵</a></nav>
 </header>
 
 <div class="hero">
@@ -77,8 +77,10 @@
 
 <footer>© 2026 제주도 관광지 가이드 · 정보는 참고용이며 방문 전 운영 정보를 확인하세요.</footer>
 
+<script src="config.js"></script>
 <script>
-const spots=[
+const API_URL = window.API_URL; // config.js 에서 설정
+const fallbackSpots=[
  {n:"한라산 국립공원",c:"자연",e:"⛰️",bg:"#a8d5a2",d:"남한 최고봉(1,947m). 백록담까지 이어지는 등산 코스로 유명합니다.",l:"제주시 · 서귀포시"},
  {n:"성산일출봉",c:"자연",e:"🌅",bg:"#ffd29a",d:"유네스코 세계유산. 정상에서 바라보는 일출이 장관입니다.",l:"서귀포시 성산읍"},
  {n:"우도",c:"바다",e:"🏝️",bg:"#9fe0e6",d:"에메랄드빛 바다와 땅콩아이스크림으로 유명한 작은 섬입니다.",l:"제주시 우도면"},
@@ -92,6 +94,7 @@ const spots=[
  {n:"오설록 티뮤지엄",c:"문화",e:"🍵",bg:"#bfe0a3",d:"드넓은 녹차밭과 차 문화를 즐길 수 있는 복합 문화공간입니다.",l:"서귀포시 안덕면"},
  {n:"용두암",c:"바다",e:"🐉",bg:"#e3b9a4",d:"용이 하늘로 오르는 모습을 닮은 제주공항 인근 해안 기암입니다.",l:"제주시 용담동"}
 ];
+let spots=fallbackSpots;
 const grid=document.getElementById('grid');
 function render(f){
   grid.innerHTML=spots.filter(s=>f==='all'||s.c===f).map(s=>`
@@ -109,7 +112,11 @@ document.querySelectorAll('.filters button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.filters button').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');render(b.dataset.f);
 });
-render('all');
+const fromDb=r=>({n:r.name,c:r.category,e:r.emoji||'📍',bg:r.color||'#cde',d:r.description||'',l:r.location||''});
+fetch(API_URL+'/spots').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()})
+  .then(rows=>{if(rows.length){spots=rows.map(fromDb);console.log('API 데이터 사용');}})
+  .catch(e=>console.warn('API 실패, 내장 데이터 사용:',e))
+  .finally(()=>render('all'));
 </script>
 </body>
 </html>
